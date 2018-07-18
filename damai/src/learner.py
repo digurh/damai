@@ -6,6 +6,13 @@ from torch import optim
 
 class Learner:
     def __init__(self, data, net, opt=None):
+        '''
+        Encapsulates entire learning 'process' into one object
+
+        Params: data: instance of DataHandler to be assiciated with network
+                net: instance of Network(nn.Module) to be trained
+                opt: optimizer - will be SGD if left None
+        '''
         self.data = data
         self.net = net
 
@@ -20,7 +27,7 @@ class Learner:
 
         Params: lr_init: starting value from which lr will be increased
                 lr_end: lr will increase until it is >= this value
-                increase_factor: amount by which previous learning rate will be 
+                increase_factor: amount by which previous learning rate will be
                                  multiplied each step
         '''
         losses = self.train(lr_find=(lr_init, lr_end, increase_factor))
