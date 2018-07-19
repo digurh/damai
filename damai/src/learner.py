@@ -6,7 +6,7 @@ from torch import optim
 
 
 class Learner:
-    def __init__(self, data, net):
+    def __init__(self, data, net, criterion):
         '''
         Encapsulates entire learning 'process' into one object
 
@@ -15,6 +15,7 @@ class Learner:
         '''
         self.data = data
         self.net = net
+        self.criterion = criterion
 
     def lr_find(self, lr_init=1e-7, lr_end = 1, increase_factor=10):
         '''
@@ -40,11 +41,18 @@ class Learner:
 
 
     def train(self, sch):
+        epochs = sch.n_epochs
+        for ep in range(epochs):
+            for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
+                y_hat = self.net.forward(X)
+                loss = self.criterion(y_hat, y)
+                sch.losses.append(loss)
 
-        for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
+                # performs optimizer zero_grad, backprop, optimizer step, and lr decay step
+                sch.step(self.net)
 
-            sch.step()
-
+            val_loss = self.run_val_set()
+            self.print_log()
 
 
     def run_val_set(self):
