@@ -48,8 +48,14 @@ class Learner:
                 loss = self.criterion(y_hat, y)
                 sch.losses.append(loss)
 
-                # performs optimizer zero_grad, backprop, optimizer step, and lr decay step
-                sch.step(self.net)
+                if sch.decay_type in not None:
+                    sch.decay_type.step()
+
+                sch.opt.zero_grad()
+                self.net.backward(retain_graph=True)
+                sch.opt.step()
+
+                sch.batch_num += 1
 
             val_loss = self.run_val_set()
             self.print_log()

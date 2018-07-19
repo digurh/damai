@@ -24,17 +24,8 @@ class LRScheduler(Tracker):
 
         self.batch_num = 0
 
-    def step(self, net):
-        if self.decay_type in not None:
-            self.decay_type.step()
-
-        self.opt.zero_grad()
-        net.backward(retain_graph=True)
-        self.opt.step()
-
-        self.restart
-
-        self.batch_num += 1
+    def step(self):
+        self.decay_type.step()
 
     def set_decay(self, decay_type):
         self.decay_type = decay_type
