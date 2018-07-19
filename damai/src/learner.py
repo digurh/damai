@@ -1,23 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from torch import optim
 
 
 class Learner:
-    def __init__(self, data, net, opt=None):
+    def __init__(self, data, net):
         '''
         Encapsulates entire learning 'process' into one object
 
         Params: data: instance of DataHandler to be assiciated with network
                 net: instance of Network(nn.Module) to be trained
-                opt: optimizer - will be SGD if left None
         '''
         self.data = data
         self.net = net
-
-        if opt is None: self.opt = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-        else self.opt = opt
 
     def lr_find(self, lr_init=1e-7, lr_end = 1, increase_factor=10):
         '''
@@ -42,6 +39,16 @@ class Learner:
         pass
 
 
-    def train(self, sch=None):
+    def train(self, sch):
 
-        for i, (X, y) in enumerate(self.data.batch_load()):
+        for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
+
+            sch.step()
+
+
+
+    def run_val_set(self):
+
+        return acc
+
+    def print_log(self):
