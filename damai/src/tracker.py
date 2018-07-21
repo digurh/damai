@@ -72,8 +72,6 @@ class LRFinder(Tracker):
         for param_group in self.opt.param_groups:
             param_group['lr'] *= self.increase_factor
 
-        self.batch_num += 1
-
     def plot(self):
 
         fig = plt.figure()

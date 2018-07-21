@@ -35,6 +35,8 @@ class Learner:
         for i in range(len(sch.n_epochs)):
             self.train(sch, sch.n_epochs[i])
 
+        # self.save()
+
     def train(self, sch, n_epochs, learn=True):
         for ep in range(n_epochs):
             ep_losses = []
