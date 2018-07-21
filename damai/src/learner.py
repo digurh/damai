@@ -43,10 +43,12 @@ class Learner:
     def train(self, sch):
         epochs = sch.n_epochs
         for ep in range(epochs):
+            ep_losses = []
             for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
                 y_hat = self.net.forward(X)
                 loss = self.criterion(y_hat, y)
                 sch.losses.append(loss)
+                ep_losses.append(loss)
 
                 if sch.decay_type in not None:
                     sch.decay_type.step()
@@ -58,11 +60,16 @@ class Learner:
                 sch.batch_num += 1
 
             val_loss = self.run_val_set()
-            self.print_log()
+            self.print_log(, ep_losses, val_losses)
 
 
     def run_val_set(self):
+        val_losses = []
+        for i, (X, y) in enumerate(self.data.val_load()):
+            y_hat = self.net.forward(X)
+            loss = self.criterion(y_hat, y)
+            val_losses.append(loss)
 
-        return acc
+        return val_losses
 
-    def print_log(self):
+    def print_log(self, train_loss, val_loss):
