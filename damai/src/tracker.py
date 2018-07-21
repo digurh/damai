@@ -5,6 +5,7 @@ from torch import optim
 
 class Tracker:
     self.losses = []
+    self.val_losses = []
     self.batch_num = 0
     def step(self): pass
     def plot(self): pass
@@ -12,12 +13,11 @@ class Tracker:
 
 class LRScheduler(Tracker):
     # restart_sch is (n_cycles, increase_factor_per_cycle)
-    def __init__(self, n_epochs, opt=None, learn_rate=0.0001):
+    def __init__(self, opt=None, learn_rate=0.0001):
         super().__init__()
-        self.n_epochs = n_epochs
         self.learn_rate = learn_rate
+        self.n_epochs = 0
         self.decay_type = None
-        self.restart_sch = None
 
         if opt is None: self.opt = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
         else self.opt = opt
@@ -31,6 +31,11 @@ class LRScheduler(Tracker):
         self.decay_type = decay_type
 
     def set_restarts(self, sch):
+        '''
+        Allows a setting of the restart schedule to something other than the default
+
+        Params: sch: (x, y, z) x = number of cycles, y = cycle length, z = cycle increase factor
+        '''
         self.restart_sch = sch
 
     def get_opt(self):
@@ -47,7 +52,7 @@ class LRScheduler(Tracker):
         fig = plt.figure()
         plt.plot(np.arange(1, self.batch_num), self.losses)
         plt.ylabel('loss')
-        plt.xlabel('iteration')
+        plt.xlabel('batch')
         plt.show()
 
 
@@ -71,8 +76,9 @@ class LRFinder(Tracker):
         self.batch_num += 1
 
     def plot(self):
+
         fig = plt.figure()
         plt.plot(self.learn_rates, self.losses)
         plt.ylabel('loss')
-        plt.xlabel('iteration')
+        plt.xlabel('learn rates')
         plt.show()

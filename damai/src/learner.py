@@ -29,18 +29,12 @@ class Learner:
                 increase_factor: amount by which previous learning rate will be
                                  multiplied each step
         '''
-        losses = self.train(sch=LRFinder(lr_init, lr_end, increase_factor))
+        losses = self.train(sch=LRFinder(lr_init, lr_end, increase_factor), learn=False)
 
-
-    def save(self):
+    def fit(self):
         pass
 
-
-    def load(self):
-        pass
-
-
-    def train(self, sch):
+    def train(self, sch, learn=True):
         epochs = sch.n_epochs
         for ep in range(epochs):
             ep_losses = []
@@ -50,8 +44,7 @@ class Learner:
                 sch.losses.append(loss)
                 ep_losses.append(loss)
 
-                if sch.decay_type in not None:
-                    sch.decay_type.step()
+                if sch.decay_type in not None: sch.decay_type.step()
 
                 sch.opt.zero_grad()
                 self.net.backward(retain_graph=True)
@@ -59,8 +52,12 @@ class Learner:
 
                 sch.batch_num += 1
 
-            val_loss = self.run_val_set()
-            self.print_log(ep, ep_losses, val_losses)
+            if learn:
+                val_loss = self.run_val_set()
+                sch.val_losses.append(val_loss)
+                self.print_log(ep, ep_losses, val_losses)
+            else:
+                sch.plot()
 
 
     def run_val_set(self):
@@ -74,3 +71,9 @@ class Learner:
 
     def print_log(self, ep, train_loss, val_loss):
         print('Epoch: {} - Train Loss: {:.3f} - {}\Val Loss: {:.3f}'.format(ep, np.mean(train_loss), np.mean(val_loss)))
+
+    def save(self):
+        pass
+
+    def load(self):
+        pass
