@@ -16,15 +16,25 @@ class Tracker:
 
 class LRScheduler(Tracker):
     # restart_sch is (n_cycles, increase_factor_per_cycle)
-    def __init__(self, opt=None, learn_rate=0.0001):
+    def __init__(self, opt=None, decay_type=None, learn_rate=0.0001):
         super().__init__()
         self.learn_rate = learn_rate
-        self.decay_type = None
-        if opt is None: self.opt = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-        else self.opt = opt
 
-    def step(self):
-        self.decay_type.step()
+        self.opt = None
+        self.decay_type = None
+        if opt is None:
+            self.opt = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+        else:
+            self.opt = opt
+        if decay_type is None:
+            self.decay_type = optim.lr_scheduler.CosineAnnealingLR(self.opt, )
+        else:
+            self.decay_type = decay_type
+
+    def step(self, lr_max):
+        lr = 0.5 * lr_max * (1 + np.cos((T_curr / T_max) * np.pi))
+        for param_group in opt.param_groups:
+            param_group['lr'] = lr
 
     def set_decay(self, decay_type):
         self.decay_type = decay_type
@@ -33,7 +43,7 @@ class LRScheduler(Tracker):
         '''
         Allows a setting of the restart schedule to something other than the default
 
-        Params: sch: (x, y, z) x = number of cycles, y = cycle length, z = cycle increase factor
+        Params: sch: [x, y, z] x = number of cycles, y = cycle length, z = cycle increase factor
         '''
         self.n_epochs = [sch[1] * sch[2]**i for i in range(sch[0])]
         self.restart_sch = sch
