@@ -6,9 +6,9 @@ from torch import optim
 class Tracker:
     self.losses = []
     self.val_losses = []
-    self.n_epochs = []
+    self.n_epochs = [1]
     self.batch_num = 0
-    self.restart_sch = (1, 1, 1)
+    self.restart_sch = [1, 1, 1]
 
     def step(self): pass
     def plot(self): pass
@@ -45,7 +45,7 @@ class LRScheduler(Tracker):
         self.opt = new_opt
 
     def get_sch(self):
-        return self.restart_sch
+        print("Restart Schedule: {} - Resulting Epochs: {}".format(self.restart_sch, self.n_epochs))
 
 
     def plot(self):
