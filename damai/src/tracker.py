@@ -35,8 +35,9 @@ class LRScheduler(Tracker):
 
         Params: sch: (x, y, z) x = number of cycles, y = cycle length, z = cycle increase factor
         '''
-        self.restart_sch = sch
         self.n_epochs = [sch[1] * sch[2]**i for i in range(sch[0])]
+        self.restart_sch = sch
+
 
     def get_opt(self):
         return self.opt

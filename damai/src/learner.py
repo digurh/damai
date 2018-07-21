@@ -31,12 +31,12 @@ class Learner:
         '''
         losses = self.train(sch=LRFinder(lr_init, lr_end, increase_factor), learn=False)
 
-    def fit(self):
-        pass
+    def fit(self, sch):
+        for i in range(len(sch.n_epochs)):
+            self.train(sch, sch.n_epochs[i])
 
-    def train(self, sch, learn=True):
-        epochs = sch.n_epochs
-        for ep in range(epochs):
+    def train(self, sch, n_epochs, learn=True):
+        for ep in range(n_epochs):
             ep_losses = []
             for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
                 y_hat = self.net.forward(X)
