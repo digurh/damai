@@ -6,7 +6,7 @@ from torch import optim
 class Tracker:
     self.losses = []
     self.val_losses = []
-    self.n_epochs = 0
+    self.n_epochs = []
     self.batch_num = 0
     self.restart_sch = (1, 1, 1)
 
@@ -36,7 +36,7 @@ class LRScheduler(Tracker):
         Params: sch: (x, y, z) x = number of cycles, y = cycle length, z = cycle increase factor
         '''
         self.restart_sch = sch
-        self.n_epochs = sum([sch[1] * sch[2]**i for i in range(sch[0])])
+        self.n_epochs = [sch[1] * sch[2]**i for i in range(sch[0])]
 
     def get_opt(self):
         return self.opt
