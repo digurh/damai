@@ -38,6 +38,7 @@ class Learner:
         # self.save()
 
     def train(self, sch, n_epochs, learn=True):
+        batch_per_cycle = 0
         for ep in range(n_epochs):
             ep_losses = []
             for i, (X, y) in tqdm(enumerate(self.data.batch_load())):
@@ -46,14 +47,15 @@ class Learner:
                 sch.losses.append(loss)
                 ep_losses.append(loss)
 
-                # sch.step()
-                sch.decay_type.step()
+                sch.step()  # args: lr_init, total batches per cycle (i.e. bpe*n_epochs), current batch in cycle
+                # sch.decay_type.step()
 
                 sch.opt.zero_grad()
                 self.net.backward(retain_graph=True)
                 sch.opt.step()
 
                 sch.batch_num += 1
+                batch_per_cycle += 1
 
             if learn:
                 val_loss = self.run_val_set()

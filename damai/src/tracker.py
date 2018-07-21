@@ -31,7 +31,7 @@ class LRScheduler(Tracker):
         else:
             self.decay_type = decay_type
 
-    def step(self, lr_max):
+    def step(self, lr_max, T_max, T_curr):
         lr = 0.5 * lr_max * (1 + np.cos((T_curr / T_max) * np.pi))
         for param_group in opt.param_groups:
             param_group['lr'] = lr
