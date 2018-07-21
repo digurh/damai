@@ -60,7 +60,7 @@ class Learner:
                 sch.batch_num += 1
 
             val_loss = self.run_val_set()
-            self.print_log(, ep_losses, val_losses)
+            self.print_log(ep, ep_losses, val_losses)
 
 
     def run_val_set(self):
@@ -72,4 +72,5 @@ class Learner:
 
         return val_losses
 
-    def print_log(self, train_loss, val_loss):
+    def print_log(self, ep, train_loss, val_loss):
+        print('Epoch: {} - Train Loss: {:.3f} - {}\Val Loss: {:.3f}'.format(ep, np.mean(train_loss), np.mean(val_loss)))
