@@ -32,12 +32,16 @@ class Learner:
         losses = self.train(sch=LRFinder(lr_init, lr_end, increase_factor), learn=False)
 
     def fit(self, sch):
+        lr = 0
+        for param_group in sch.opt.param_groups:
+            lr += param_group['lr']
+
         for i in range(len(sch.n_epochs)):
-            self.train(sch, sch.n_epochs[i])
+            self.train(sch, sch.n_epochs[i], lr)
 
         # self.save()
 
-    def train(self, sch, n_epochs, learn=True):
+    def train(self, sch, n_epochs, lr, learn=True):
         batch_per_cycle = 0
         for ep in range(n_epochs):
             ep_losses = []
@@ -46,8 +50,9 @@ class Learner:
                 loss = self.criterion(y_hat, y)
                 sch.losses.append(loss)
                 ep_losses.append(loss)
-
-                sch.step()  # args: lr_init, total batches per cycle (i.e. bpe*n_epochs), current batch in cycle
+                # args: lr_init, total batches per cycle (i.e. bpe*n_epochs), current batch in cycle
+                # need batches per cycle from DataHandler
+                sch.step(lr, self.data.bpe*n_epochs, bpc)
                 # sch.decay_type.step()
 
                 sch.opt.zero_grad()
@@ -55,7 +60,7 @@ class Learner:
                 sch.opt.step()
 
                 sch.batch_num += 1
-                batch_per_cycle += 1
+                bpc += 1
 
             if learn:
                 val_loss = self.run_val_set()
