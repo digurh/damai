@@ -47,6 +47,13 @@ class DataHandler:
         self.batch_size = batch_size
         self.image_size = image_size
         self.loader = None
+        self.transform = transforms.Compose([transforms.resize((self.image_size, self.image_size))
+                                             transforms.RandomResizedCrop(),
+                                             transforms.RandomHorizontalFlip(),
+                                             transforms.ToTensor(),
+                                             transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                  std=[0.229, 0.224, 0.225])
+                                            ])
 
 
     def get_csv(self, path, p_val=0.2, p_test = 0.2):
@@ -54,123 +61,20 @@ class DataHandler:
         Takes path to csv file and breaks file down into appropriate training,
         validation, and test sections that can be accessed via instance variabless
     '''
-        transform = transforms.Compose([Rescale(self.image_size),
-                                        RandomCrop(self.image_size*0.85),
-                                        ToTensor()
-                                      ]))
-        dataset = CustomDataset(path, transform)
-        self.loader = DataLoader(transformed_dataset, batch_size=4, shuffle=True, num_workers=4)
+        dataset = CustomDataset(path, self.transform)
+        self.loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=4)
 
     def get_data(self, path):
     '''
         Takes path to data folders and places training, validation, and test data
         in accessible instance variables
     '''
-    if self.image_size is not None:
-        train_set=torchvision.datasets.ImageFolder(root='/path/to/your/data/trn', transform=generic_transform)
-        test_set=torchvision.datasets.ImageFolder(root='/path/to/your/data/val', transform=generic_transform)
-    else:
+    train_set=torchvision.datasets.ImageFolder(root='/data/train/', transform=self.transform)
+    val_set=torchvision.datasets.ImageFolder(root='/data/val/', transform=None)
 
 
     def batch_load(self):
     '''
         Generator function to load minibatches to network
     '''
-
-
-    def sample(self):
-    '''
-        If images, loads single examples
-    '''
-
-
-
-    def transform(self, tforms):
-    '''
-        Performs entered transformations on data if images
-    '''
-
-
-
-class Rescale(object):
-    '''
-        Rescale the image in a sample to a given size.
-
-        Params: output_size (tuple or int): Desired output size. If tuple, output is
-                matched to output_size. If int, smaller of image edges is matched
-                to output_size keeping aspect ratio the same.
-    '''
-
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        self.output_size = output_size
-
-    def __call__(self, sample):
-        image, landmarks = sample['image']
-
-        h, w = image.shape[:2]
-        if isinstance(self.output_size, int):
-            if h > w:
-                new_h, new_w = self.output_size * h / w, self.output_size
-            else:
-                new_h, new_w = self.output_size, self.output_size * w / h
-        else:
-            new_h, new_w = self.output_size
-
-        new_h, new_w = int(new_h), int(new_w)
-
-        img = transform.resize(image, (new_h, new_w))
-
-        # h and w are swapped for landmarks because for images,
-        # x and y axes are axis 1 and 0 respectively
-        landmarks = landmarks * [new_w / w, new_h / h]
-
-        return {'image': img}
-
-
-class RandomCrop(object):
-    '''
-        Crop randomly the image in a sample.
-
-        Params: output_size (tuple or int): Desired output size. If int, square crop
-                is made.
-    '''
-
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-
-    def __call__(self, sample):
-        image, landmarks = sample['image']
-
-        h, w = image.shape[:2]
-        new_h, new_w = self.output_size
-
-        top = np.random.randint(0, h - new_h)
-        left = np.random.randint(0, w - new_w)
-
-        image = image[top: top + new_h,
-                      left: left + new_w]
-
-        landmarks = landmarks - [left, top]
-
-        return {'image': image}
-
-
-class ToTensor(object):
-    '''
-        Convert ndarrays in sample to Tensors
-    '''
-
-    def __call__(self, sample):
-        image, landmarks = sample['image']
-
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        image = image.transpose((2, 0, 1))
-        return {'image': torch.from_numpy(image)}
+        return self.loader
