@@ -8,10 +8,22 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 
 
+# split off validation set
+def get_val_idx(ds_size, cv_percent=0.2):
+    return np.random.choice(ds_size, int(ds_size*cv_percent))
+
+def create_val_set(idx):
+    # return labels[labels==idx].copy(deep=True)
+    return labels.iloc[idx]
+
+def remove_val_from_train(idx):
+    labels.drop(labels.index[[idx]], inplace=True)
+
+
 class CustomDataset(Dataset):
-    def __init__(self, csv_file, root_dir, transform=None):
+    def __init__(self, csv_file, transform=None):
         self.data_frame = pd.read_csv(csv_file)
-        self.root_dir = root_dir
+        self.root_dir = os.path.dirname(os.path.realpath(__file__))
         self.transform = transform
 
     def __len__(self):
@@ -23,7 +35,7 @@ class CustomDataset(Dataset):
         image = io.imread(img_name)
         landmarks = self.data_frame.iloc[idx, 1:].as_matrix()
         landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
+        sample = {'image': image}
 
         if self.transform:
             sample = self.transform(sample)
@@ -34,6 +46,7 @@ class DataHandler:
     def __init__(self, batch_size, image_size=None):
         self.batch_size = batch_size
         self.image_size = image_size
+        self.loader = None
 
 
     def get_csv(self, path, p_val=0.2, p_test = 0.2):
@@ -41,7 +54,12 @@ class DataHandler:
         Takes path to csv file and breaks file down into appropriate training,
         validation, and test sections that can be accessed via instance variabless
     '''
-
+        transform = transforms.Compose([Rescale(self.image_size),
+                                        RandomCrop(self.image_size*0.85),
+                                        ToTensor()
+                                      ]))
+        dataset = CustomDataset(path, transform)
+        self.loader = DataLoader(transformed_dataset, batch_size=4, shuffle=True, num_workers=4)
 
     def get_data(self, path):
     '''
@@ -73,17 +91,6 @@ class DataHandler:
     '''
 
 
-# split off validation set
-def get_val_idx(ds_size, cv_percent=0.2):
-    return np.random.choice(ds_size, int(ds_size*cv_percent))
-
-def create_val_set(idx):
-    # return labels[labels==idx].copy(deep=True)
-    return labels.iloc[idx]
-
-def remove_val_from_train(idx):
-    labels.drop(labels.index[[idx]], inplace=True)
-
 
 class Rescale(object):
     '''
@@ -99,7 +106,7 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, landmarks = sample['image']
 
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
@@ -118,7 +125,7 @@ class Rescale(object):
         # x and y axes are axis 1 and 0 respectively
         landmarks = landmarks * [new_w / w, new_h / h]
 
-        return {'image': img, 'landmarks': landmarks}
+        return {'image': img}
 
 
 class RandomCrop(object):
@@ -138,7 +145,7 @@ class RandomCrop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, landmarks = sample['image']
 
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
@@ -151,7 +158,7 @@ class RandomCrop(object):
 
         landmarks = landmarks - [left, top]
 
-        return {'image': image, 'landmarks': landmarks}
+        return {'image': image}
 
 
 class ToTensor(object):
@@ -160,11 +167,10 @@ class ToTensor(object):
     '''
 
     def __call__(self, sample):
-        image, landmarks = sample['image'], sample['landmarks']
+        image, landmarks = sample['image']
 
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image.transpose((2, 0, 1))
-        return {'image': torch.from_numpy(image),
-                'landmarks': torch.from_numpy(landmarks)}
+        return {'image': torch.from_numpy(image)}
