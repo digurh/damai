@@ -33,8 +33,9 @@ class Learner:
 
     def fit(self, sch):
         lr = 0
-        for param_group in sch.opt.param_groups:
-            lr += param_group['lr']
+        [lr += param_group['lr'] for param_group in sch.opt.param_groups]
+        # for param_group in sch.opt.param_groups:
+        #     lr += param_group['lr']
 
         for i in range(len(sch.n_epochs)):
             self.train(sch, sch.n_epochs[i], lr)
