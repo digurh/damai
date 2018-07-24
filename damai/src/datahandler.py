@@ -86,13 +86,13 @@ def remove_val_from_train(idx):
 
 
 class Rescale(object):
-    """Rescale the image in a sample to a given size.
+    '''
+        Rescale the image in a sample to a given size.
 
-    Args:
-        output_size (tuple or int): Desired output size. If tuple, output is
-            matched to output_size. If int, smaller of image edges is matched
-            to output_size keeping aspect ratio the same.
-    """
+        Params: output_size (tuple or int): Desired output size. If tuple, output is
+                matched to output_size. If int, smaller of image edges is matched
+                to output_size keeping aspect ratio the same.
+    '''
 
     def __init__(self, output_size):
         assert isinstance(output_size, (int, tuple))
@@ -122,12 +122,12 @@ class Rescale(object):
 
 
 class RandomCrop(object):
-    """Crop randomly the image in a sample.
+    '''
+        Crop randomly the image in a sample.
 
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
-    """
+        Params: output_size (tuple or int): Desired output size. If int, square crop
+                is made.
+    '''
 
     def __init__(self, output_size):
         assert isinstance(output_size, (int, tuple))
@@ -155,7 +155,9 @@ class RandomCrop(object):
 
 
 class ToTensor(object):
-    """Convert ndarrays in sample to Tensors."""
+    '''
+        Convert ndarrays in sample to Tensors
+    '''
 
     def __call__(self, sample):
         image, landmarks = sample['image'], sample['landmarks']
